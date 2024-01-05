@@ -14,7 +14,9 @@ public class TouchInputManager : MonoBehaviour
 
     public bool isRotating = false;
 
-    private Transform objectToMove;
+    [SerializeField] private Transform objectToMove;
+
+    [SerializeField] private Ingredient ingredientScript;
 
     public float timer;
 
@@ -34,6 +36,7 @@ public class TouchInputManager : MonoBehaviour
                     if (Physics.Raycast(ray, out hit))
                     {
                         objectToMove = hit.transform.root;
+                        ingredientScript = objectToMove.GetComponent<Ingredient>();
                     }
 
                     startTouchPosition = touch.position;
@@ -62,7 +65,7 @@ public class TouchInputManager : MonoBehaviour
 
         if (Mathf.Abs(x) == 0 && Mathf.Abs(y) == 0)
         {
-            Debug.Log("Tappato fratmo");
+            
             return;
         }
 
@@ -105,16 +108,22 @@ public class TouchInputManager : MonoBehaviour
     }
     public void FlipIngredient(Vector3 directionJump, Vector3 desiredRotation)
     {
-        if (CheckIngredientByObjectToMove(directionJump))
+        
+        if (ingredientScript.CheckIngredientNearObjectToMove(directionJump))
         {
             isRotating = true;
-            Debug.Log(isRotating);
-            targetPosition = objectToMove.position + directionJump;
+            //Domanda: perchè devo dividere per 10?
+            targetPosition = objectToMove.position + directionJump + new Vector3(0f,(ingredientScript.GetParentScale(directionJump) * 0.1f),0f);
             targetRotation = desiredRotation;
             objectToMove.DOJump(targetPosition, 1, 1, 0.5f, false);
             objectToMove.DORotate(targetRotation, 0.5f, RotateMode.WorldAxisAdd);
         }
-        else return;
+        else
+        {
+            Camera.main.DOShakePosition(.5f, .1f, 50, 2, true);
+            return;
+        }
+        
     }
     public void Timer()
     {
@@ -128,17 +137,19 @@ public class TouchInputManager : MonoBehaviour
             }
         }
     }
-    
-    public bool CheckIngredientByObjectToMove(Vector3 desiredRayDirection)
-    {
+
+    /*public bool CheckIngredientNearObjectToMove(Vector3 desiredRayDirection)
+    {       
         Ray ray = new Ray(objectToMove.position, desiredRayDirection);
         RaycastHit hit;
-
         if (Physics.Raycast(ray, out hit, 1f))
-        {
+        {           
+            objectToMove.SetParent(hit.transform);           
             return true;
         }
-        else return false;
-    }
-    
+        else
+        {            
+            return false;
+        }
+    }*/
 }

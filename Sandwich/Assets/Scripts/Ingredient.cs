@@ -4,19 +4,45 @@ using UnityEngine;
 
 public class Ingredient : MonoBehaviour
 {
-    float raycastDistance = 2f;
-    public bool CheckJump(Vector3 direction)
+    Ray ray;
+    public bool CheckIngredientNearObjectToMove(Vector3 desiredRayDirection)
     {
-        Ray ray = new Ray(transform.position, direction);
+        ray = new Ray(transform.position, desiredRayDirection);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, raycastDistance))
+        if (Physics.Raycast(ray, out hit, 1f))
         {
-            //sparo raycast sul lato che serve per controllare se c'è un ingrediente
+            transform.SetParent(hit.transform.root);
             return true;
-        }else
+        }
+        else
         {
             return false;
         }
     }
+
+    public float GetParentScale(Vector3 rayDirection)
+    {
+        Ray ray = new Ray(transform.position, rayDirection);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            GameObject parent = hit.collider.gameObject;
+            float offsetY = SumLossyScale(parent.transform);
+            return offsetY;
+        }
+        return 0f;
+    }
+    private float SumLossyScale(Transform parent)
+    {
+        float offsetY = parent.localScale.y;
+        foreach (Transform child in parent)
+        {
+            offsetY += child.lossyScale.y;
+            offsetY += SumLossyScale(child);
+        }
+        return offsetY;
+    }
+
 
 }
