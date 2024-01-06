@@ -12,6 +12,7 @@ public class Ingredient : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 1f))
         {
             transform.SetParent(hit.transform.root);
+            GameManager.Instance.GetSandwich(this.transform.root.gameObject);
             return true;
         }
         else

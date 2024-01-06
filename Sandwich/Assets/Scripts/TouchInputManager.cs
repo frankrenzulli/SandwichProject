@@ -7,19 +7,18 @@ public class TouchInputManager : MonoBehaviour
 {
     private Touch touch;
     private Vector2 startTouchPosition, endTouchPosition;
-
     private Vector3 targetPosition;
-
     private Vector3 targetRotation;
-
     public bool isRotating = false;
-
     [SerializeField] private Transform objectToMove;
-
     [SerializeField] private Ingredient ingredientScript;
-
+    [SerializeField] AudioSource audioSource;
     public float timer;
 
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
     // Update is called once per frame
     void Update()
     {
@@ -111,12 +110,16 @@ public class TouchInputManager : MonoBehaviour
         
         if (ingredientScript.CheckIngredientNearObjectToMove(directionJump))
         {
+            Undo.Instance.AddState(objectToMove.gameObject, objectToMove.transform.position, objectToMove.transform.rotation.eulerAngles);
             isRotating = true;
             //Domanda: perchè devo dividere per 10?
             targetPosition = objectToMove.position + directionJump + new Vector3(0f,(ingredientScript.GetParentScale(directionJump) * 0.1f),0f);
             targetRotation = desiredRotation;
             objectToMove.DOJump(targetPosition, 1, 1, 0.5f, false);
             objectToMove.DORotate(targetRotation, 0.5f, RotateMode.WorldAxisAdd);
+            audioSource.Play();
+            
+            
         }
         else
         {
@@ -138,18 +141,5 @@ public class TouchInputManager : MonoBehaviour
         }
     }
 
-    /*public bool CheckIngredientNearObjectToMove(Vector3 desiredRayDirection)
-    {       
-        Ray ray = new Ray(objectToMove.position, desiredRayDirection);
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 1f))
-        {           
-            objectToMove.SetParent(hit.transform);           
-            return true;
-        }
-        else
-        {            
-            return false;
-        }
-    }*/
+
 }
